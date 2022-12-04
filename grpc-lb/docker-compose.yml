@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  app-server:
+    build:
+      context: .
+      dockerfile: server.dockerfile
+    deploy:
+      mode: replicated
+      replicas: 3
+  app-client:
+    build:
+      context: .
+      dockerfile: client.dockerfile

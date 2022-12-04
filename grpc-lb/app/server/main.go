@@ -36,13 +36,15 @@ func (s *GreeterService) SayHelloLoop(stream appproto.Greeter_SayHelloLoopServer
 		err = fmt.Errorf("stream.Recv: %w", err)
 		return
 	}
-	zap.L().Info("say hello loop, receive", zap.Any("req", req))
+	zap.L().Info("receive", zap.Any("req", req))
 	for {
 		err = stream.Send(&appproto.HelloLoopReply{
 			Message: fmt.Sprintf("hi, %d", counter),
 		})
 		if err != nil {
 			zap.L().Error("stream.Send", zap.Error(err))
+		} else {
+			zap.L().Info("send msg")
 		}
 		time.Sleep(time.Second * 3)
 		counter = counter + 1
@@ -51,7 +53,7 @@ func (s *GreeterService) SayHelloLoop(stream appproto.Greeter_SayHelloLoopServer
 
 func main() {
 	l, _ := zap.NewDevelopment()
-	zap.ReplaceGlobals(l)
+	zap.ReplaceGlobals(l.Named("server"))
 	port := flag.String("prort", ":9100", "server port")
 	flag.Parse()
 	lis, err := net.Listen("tcp", *port)
@@ -60,5 +62,9 @@ func main() {
 	}
 	grpcServer := grpc.NewServer()
 	appproto.RegisterGreeterServer(grpcServer, NewGreeterService())
-	grpcServer.Serve(lis)
+	zap.L().Info("start", zap.Any("addr", port))
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		zap.L().Error("serve", zap.Error(err))
+	}
 }

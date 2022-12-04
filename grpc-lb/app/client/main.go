@@ -21,12 +21,24 @@ func main() {
 	}
 	client := appproto.NewGreeterClient(conn)
 	ctx := context.Background()
-	res, err := client.SayHello(ctx, &appproto.HelloRequest{
-		Name: "demo",
-	})
+	sayHelloClient, err := client.SayHelloLoop(ctx)
 	if err != nil {
 		zap.L().Error("say hello", zap.Error(err))
 		return
 	}
-	zap.L().Info("say hello", zap.Any("res", res))
+	err = sayHelloClient.Send(&appproto.HelloLoopRequest{
+		Name: "c1",
+	})
+	if err != nil {
+		zap.L().Error("client send", zap.Error(err))
+		return
+	}
+	for {
+		res, err := sayHelloClient.Recv()
+		if err != nil {
+			zap.L().Error("client receive", zap.Error(err))
+		} else {
+			zap.L().Info("client receive", zap.Any("res", res))
+		}
+	}
 }

@@ -7,6 +7,7 @@ option go_package = "github.com/MaoScut/grpc-demo/grpc-lb/app/appproto";
 service Greeter {
   // Sends a greeting
   rpc SayHello(HelloRequest) returns (HelloReply) {}
+  rpc SayHelloLoop(stream HelloLoopRequest) returns (stream HelloLoopReply) {}
 }
 
 // The request message containing the user's name.
@@ -14,3 +15,7 @@ message HelloRequest { string name = 1; }
 
 // The response message containing the greetings
 message HelloReply { string message = 1; }
+
+message HelloLoopRequest { string name = 1; }
+
+message HelloLoopReply { string message = 1; }

@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net"
+	"time"
 
 	"github.com/MaoScut/grpc-demo/grpc-lb/app/appproto"
 	"go.uber.org/zap"
@@ -24,6 +26,27 @@ func (s *GreeterService) SayHello(ctx context.Context, req *appproto.HelloReques
 		Message: "h1",
 	}
 	return
+}
+
+func (s *GreeterService) SayHelloLoop(stream appproto.Greeter_SayHelloLoopServer) (err error) {
+	counter := 0
+	var req *appproto.HelloLoopRequest
+	req, err = stream.Recv()
+	if err != nil {
+		err = fmt.Errorf("stream.Recv: %w", err)
+		return
+	}
+	zap.L().Info("say hello loop, receive", zap.Any("req", req))
+	for {
+		err = stream.Send(&appproto.HelloLoopReply{
+			Message: fmt.Sprintf("hi, %d", counter),
+		})
+		if err != nil {
+			zap.L().Error("stream.Send", zap.Error(err))
+		}
+		time.Sleep(time.Second * 3)
+		counter = counter + 1
+	}
 }
 
 func main() {

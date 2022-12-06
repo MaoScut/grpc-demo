@@ -24,6 +24,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	time.Sleep(time.Second * 1)
 	zap.L().Info("start", zap.Any("server-addr", addr))
 	client := appproto.NewGreeterClient(conn)
 	ctx := context.Background()
